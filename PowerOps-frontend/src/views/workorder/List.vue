@@ -36,6 +36,7 @@
           <el-tag v-else type="primary">{{ row.orderType }}</el-tag>
         </template>
       </el-table-column>
+      <el-table-column prop="deviceId" label="设备ID" width="80" />
       <el-table-column prop="description" label="描述" min-width="200" show-overflow-tooltip />
       <el-table-column label="优先级" width="100">
         <template #default="{ row }">

@@ -13,6 +13,7 @@
       </el-form-item>
       <el-form-item label="设备类型">
         <el-select v-model="searchForm.deviceType" placeholder="请选择" clearable style="width: 130px">
+          <el-option label="变压器" value="变压器" />
           <el-option label="配电柜" value="配电柜" />
           <el-option label="智能电表" value="智能电表" />
           <el-option label="断路器" value="断路器" />
@@ -67,6 +68,7 @@
         <el-col :span="12">
           <el-form-item label="设备类型" prop="deviceType">
             <el-select v-model="form.deviceType" placeholder="请选择" style="width: 100%">
+              <el-option label="变压器" value="变压器" />
               <el-option label="配电柜" value="配电柜" />
               <el-option label="智能电表" value="智能电表" />
               <el-option label="断路器" value="断路器" />

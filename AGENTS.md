@@ -19,18 +19,46 @@ D:\backend\project\PowerOps\              ← Git root / monorepo root
 
 ## Session Summary (2026-06-25)
 
-Reorganized from flat layout to monorepo structure: backend → `PowerOps-backend/`, frontend → `PowerOps-frontend/`, both under `D:\backend\project\PowerOps\`.
+### 目录重组
+从扁平结构改为 monorepo：后端 → `PowerOps-backend/`，前端 → `PowerOps-frontend/`，根目录保留 `.git`。
 
-Fixed WorkOrderController `updateOrder` path to `@PutMapping("/{id}")` for RESTful consistency. Removed duplicate ojdbc11 dependency from pom.xml to clear Maven warning.
+### Bug 修复
+- **DeviceRequest** 补 `status` 字段 — 编辑设备时 status 被丢弃导致 Oracle ORA-17004
+- **DeviceRequest** 补 `@NotBlank` on `deviceNo` — 前端校验比后端严
+- **application.properties** 加 `jdbc-type-for-null=VARCHAR` — 防 null 值触发 Oracle 错误
+- **UserRequest** 密码改用 `CreateGroup` 校验组 — 编辑用户时密码可选
+- **UserMapper.xml** update 语句用 `<if>` 跳过空密码 — 不再覆盖原密码
+- **UserController** createUser 用 `@Validated(CreateGroup.class)` — 仅新增时校验密码
+- **PowerRecordController** 新增 `GET /api/power/list` 分页接口 — 全量查询
+- **PowerRecordMapper** 新增 `listAll`/`countAll` 方法
+- **WorkOrderController** `updateOrder` 改为 `@PutMapping("/{id}")` — RESTful 一致性
+- **pom.xml** 删除重复 ojdbc11 依赖 — 消除 Maven 编译警告
+- **device/List.vue** 补 `变压器` 设备类型选项（5 种对齐后端）
+- **workorder/List.vue** 表格补 `deviceId` 列 — 可查看关联设备
+- **PowerRecordMapper.java** 删除多余 `BigDecimal` import
 
-All 7 course-design requirements confirmed in place:
-1. ✅ Unified Result return class (`common/Result.java`)
-2. ✅ Global exception handler (`config/GlobalExceptionHandler.java`)
-3. ✅ Pagination on all list endpoints (`GET /list` with pageNum/pageSize)
-4. ✅ RESTful Controller style
-5. ✅ Oracle 19c compatible (Sequence + ROWNUM)
-6. ✅ No extra business modules (6 only)
-7. ✅ No Redis/MQ/Spring Security
+### 前端优化
+- **device/List.vue** 商铺字段改为 `el-select filterable` — 从 API 加载商铺列表
+- **user/List.vue** 编辑弹窗密码改为可选，提示"留空则不修改"
+- **power/List.vue** 改为调用 `GET /api/power/list` 全量分页查询，不再强制 shopId
+
+### 文档更新
+- **README.md** — 完整重写：项目结构、技术栈、功能模块表、数据库设计、快速开始
+- **API_DOCUMENTATION.md** — 完整重写：6 模块全部接口文档
+- **init.sql** — 修正注释：工单 "12条"→"11条"，"60条"→"73条总计"
+
+### 文档审计修复（对照数据库实际结构）
+通过 `sqlplus` 直连 Oracle 验证：
+- **README.md** — 重写：补全 6 表字段定义（类型/可空/说明）、表关系、测试数据计数（73 条）
+- **API_DOCUMENTATION.md** — 重写：补全 3 个遗漏接口（`GET /user/{id}`, `GET /shop/{id}`, `PUT /workorder/{id}/status`）、修正字段名 `role`→`roleCode`、PowerRecord POST 示例 shopId 改为数值型、修正测试数据计数
+- **init.sql** — 修正工单注释 "12条"→"11条"、"60条"→"73条总计"
+
+### 全面审计结果
+- 6 个实体类与 init.sql DDL 47/47 字段完全一致
+- 6 个 Mapper XML 与实体字段完全匹配
+- 6 个 Controller/Service 参数与 DTO 完全匹配
+- 7 个前端视图 API 调用与后端接口完全匹配
+- 后端 42 源文件编译成功，前端构建成功
 
 ## Session Summary (2026-06-23)
 

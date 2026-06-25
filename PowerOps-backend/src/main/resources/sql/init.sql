@@ -189,7 +189,7 @@ INSERT INTO ALARM (ALARM_ID, DEVICE_ID, ALARM_TYPE, ALARM_LEVEL, STATUS)
 VALUES (SEQ_ALARM.NEXTVAL, 3, '过流', '一般', '未处理');
 
 -- ============================================
--- 60条补充测试数据
+-- 补充测试数据（共 60 条，加上初始 13 条共 73 条）
 -- ============================================
 
 -- 用户数据 (再接7条，共10用户)
@@ -298,7 +298,7 @@ VALUES (SEQ_ALARM.NEXTVAL, 10, '过流', '一般', '已解决');
 INSERT INTO ALARM (ALARM_ID, DEVICE_ID, ALARM_TYPE, ALARM_LEVEL, STATUS)
 VALUES (SEQ_ALARM.NEXTVAL, 11, '过压', '紧急', '未处理');
 
--- 工单数据 (再接12条，共12工单)
+-- 工单数据 (再接11条，共11工单)
 INSERT INTO WORK_ORDER (ORDER_ID, ORDER_NO, ORDER_TYPE, DEVICE_ID, APPLICANT_ID, HANDLER_ID, PRIORITY, DESCRIPTION, STATUS, FINISH_TIME)
 VALUES (SEQ_WORK_ORDER.NEXTVAL, 'WO20260618002', '维修', 4, 4, 2, '高', '优衣库配电柜过压报警', '处理中', NULL);
 INSERT INTO WORK_ORDER (ORDER_ID, ORDER_NO, ORDER_TYPE, DEVICE_ID, APPLICANT_ID, HANDLER_ID, PRIORITY, DESCRIPTION, STATUS, FINISH_TIME)

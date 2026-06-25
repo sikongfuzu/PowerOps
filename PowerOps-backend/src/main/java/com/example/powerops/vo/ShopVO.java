@@ -27,7 +27,7 @@ public class ShopVO {
     /** 所在楼层 */
     private String floorNo;
 
-    /** 业态类型：餐饮 / 零售 / 服务 / 娱乐 */
+    /** 业态类型：餐饮 / 零售 / 服务 */
     private String businessType;
 
     /** 联系人姓名 */
