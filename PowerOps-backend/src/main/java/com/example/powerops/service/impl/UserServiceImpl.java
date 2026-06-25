@@ -127,9 +127,12 @@ public class UserServiceImpl implements UserService {
             throw new BusinessException(Code.NOT_FOUND, "用户不存在");
         }
 
-        // 更新用户
+        // 更新用户（密码为空时保留原密码）
         SysUser user = new SysUser();
         BeanUtils.copyProperties(request, user);
+        if (user.getPassword() == null || user.getPassword().isBlank()) {
+            user.setPassword(null); // 不更新密码
+        }
         
         int rows = userMapper.update(user);
         if (rows == 0) {

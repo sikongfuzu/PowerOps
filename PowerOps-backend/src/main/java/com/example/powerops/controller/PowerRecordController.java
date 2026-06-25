@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 用电记录 Controller
@@ -24,6 +25,18 @@ public class PowerRecordController {
     public Result<?> createRecord(@RequestBody PowerRecord record) {
         powerRecordService.createRecord(record);
         return Result.success();
+    }
+
+    /**
+     * 分页查询全部用电记录，支持日期范围筛选
+     */
+    @GetMapping("/list")
+    public Result<Map<String, Object>> listAll(
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(defaultValue = "1") int pageNum,
+            @RequestParam(defaultValue = "10") int pageSize) {
+        return Result.success(powerRecordService.listAll(startDate, endDate, pageNum, pageSize));
     }
 
     /**

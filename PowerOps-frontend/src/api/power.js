@@ -1,5 +1,10 @@
 import request from '@/utils/request'
 
+/** 分页查询全部用电记录 GET /api/power/list */
+export function getPowerList(params) {
+  return request({ url: '/power/list', method: 'get', params })
+}
+
 /** 按商铺查询用电记录 GET /api/power/shop/{shopId}?startDate=&endDate= */
 export function getPowerRecords(shopId, params) {
   return request({ url: `/power/shop/${shopId}`, method: 'get', params })

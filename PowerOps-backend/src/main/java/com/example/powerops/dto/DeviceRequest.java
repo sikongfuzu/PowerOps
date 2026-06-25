@@ -21,4 +21,6 @@ public class DeviceRequest {
 
     @NotNull(message = "商铺ID不能为空")
     private Long shopId;
+
+    private String status;
 }

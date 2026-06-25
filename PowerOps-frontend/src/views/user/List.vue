@@ -70,8 +70,8 @@
       </el-row>
       <el-row :gutter="20">
         <el-col :span="12">
-          <el-form-item v-if="!isEdit" label="密码" prop="password">
-            <el-input v-model="form.password" type="password" placeholder="请输入密码" />
+          <el-form-item label="密码" prop="password">
+            <el-input v-model="form.password" type="password" :placeholder="isEdit ? '留空则不修改' : '请输入密码'" />
           </el-form-item>
         </el-col>
         <el-col :span="12">
@@ -120,11 +120,11 @@ const editingId = ref(null)
 
 const form = reactive({ username: '', password: '', realName: '', phone: '', roleCode: '', status: 1 })
 
-const rules = {
+const rules = reactive({
   username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
   password: [{ required: true, message: '请输入密码', trigger: 'blur' }, { min: 6, message: '密码长度至少6位', trigger: 'blur' }],
   roleCode: [{ required: true, message: '请选择角色', trigger: 'change' }]
-}
+})
 
 const fetchData = async () => {
   loading.value = true
@@ -148,13 +148,18 @@ const resetForm = () => {
   editingId.value = null; formRef.value?.resetFields()
 }
 
-const handleAdd = () => { isEdit.value = false; dialogTitle.value = '新增用户'; resetForm(); dialogVisible.value = true }
+const handleAdd = () => {
+  isEdit.value = false; dialogTitle.value = '新增用户'; resetForm()
+  rules.password = [{ required: true, message: '请输入密码', trigger: 'blur' }, { min: 6, message: '密码长度至少6位', trigger: 'blur' }]
+  dialogVisible.value = true
+}
 
 const handleEdit = (row) => {
   isEdit.value = true; dialogTitle.value = '编辑用户'; editingId.value = row.userId
   Object.assign(form, {
-    username: row.username, realName: row.realName, phone: row.phone, roleCode: row.roleCode, status: row.status
+    username: row.username, realName: row.realName, phone: row.phone, roleCode: row.roleCode, status: row.status, password: ''
   })
+  rules.password = [] // 编辑时密码可选
   dialogVisible.value = true
 }
 

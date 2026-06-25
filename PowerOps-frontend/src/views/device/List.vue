@@ -76,7 +76,9 @@
         </el-col>
         <el-col :span="12">
           <el-form-item label="所属商铺" prop="shopId">
-            <el-input-number v-model="form.shopId" :min="1" style="width: 100%" />
+            <el-select v-model="form.shopId" placeholder="请选择商铺" filterable style="width: 100%">
+              <el-option v-for="shop in shopOptions" :key="shop.shopId" :label="shop.shopName" :value="shop.shopId" />
+            </el-select>
           </el-form-item>
         </el-col>
       </el-row>
@@ -99,8 +101,10 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { getDeviceList, createDevice, updateDevice, deleteDevice } from '@/api/device'
+import { getShopList } from '@/api/shop'
 
 const loading = ref(false)
+const shopOptions = ref([])
 const searchForm = reactive({ deviceName: '', deviceType: '' })
 const tableData = ref([])
 const pagination = reactive({ pageNum: 1, pageSize: 10, total: 0 })
@@ -180,7 +184,10 @@ const handleDelete = async (row) => {
   } catch (e) { if (e !== 'cancel') ElMessage.error('删除失败') }
 }
 
-onMounted(fetchData)
+onMounted(() => {
+  fetchData()
+  getShopList({ pageNum: 1, pageSize: 999 }).then(res => { shopOptions.value = res.list || [] }).catch(() => {})
+})
 </script>
 
 <style scoped>

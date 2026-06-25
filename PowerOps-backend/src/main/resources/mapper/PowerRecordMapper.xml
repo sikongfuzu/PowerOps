@@ -25,4 +25,27 @@
         ORDER BY RECORD_DATE DESC
     </select>
 
+    <!-- 查询全部用电记录，支持日期范围筛选，分页，按 RECORD_DATE 倒序 -->
+    <select id="listAll" resultMap="PowerRecordResultMap">
+        SELECT * FROM (
+            SELECT t.*, ROWNUM rn FROM (
+                SELECT * FROM POWER_RECORD
+                <where>
+                    <if test="startDate != null and startDate != ''">AND RECORD_DATE &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')</if>
+                    <if test="endDate != null and endDate != ''">AND RECORD_DATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')</if>
+                </where>
+                ORDER BY RECORD_DATE DESC
+            ) t WHERE ROWNUM &lt;= #{offset} + #{limit}
+        ) WHERE rn &gt; #{offset}
+    </select>
+
+    <!-- 统计全部用电记录总数 -->
+    <select id="countAll" resultType="long">
+        SELECT COUNT(*) FROM POWER_RECORD
+        <where>
+            <if test="startDate != null and startDate != ''">AND RECORD_DATE &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')</if>
+            <if test="endDate != null and endDate != ''">AND RECORD_DATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')</if>
+        </where>
+    </select>
+
 </mapper>

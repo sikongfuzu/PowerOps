@@ -7,6 +7,7 @@ import com.example.powerops.service.UserService;
 import com.example.powerops.vo.LoginVO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -60,7 +61,7 @@ public class UserController {
      * 新增用户
      */
     @PostMapping
-    public Result<?> createUser(@Valid @RequestBody UserRequest request) {
+    public Result<?> createUser(@Validated(UserRequest.CreateGroup.class) @RequestBody UserRequest request) {
         userService.createUser(request);
         return Result.success();
     }
