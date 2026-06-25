@@ -1,0 +1,24 @@
+﻿### Monorepo root .gitignore ###
+# IDE
+.idea/
+*.iml
+.settings/
+.project
+.classpath
+.sts4-cache/
+bin/
+.vscode/
+
+# OS
+Thumbs.db
+.DS_Store
+*.swp
+*.swo
+
+# Build outputs
+PowerOps-backend/target/
+PowerOps-frontend/node_modules/
+PowerOps-frontend/dist/
+
+# Logs
+*.log

@@ -1,0 +1,9 @@
+﻿### Backend .gitignore ###
+target/
+*.class
+*.jar
+*.war
+!mvnw
+!mvnw.cmd
+*.log
+*.tmp

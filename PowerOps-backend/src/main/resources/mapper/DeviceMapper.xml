@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.powerops.mapper.DeviceMapper">
+
+    <!-- 设备结果映射，简化版：只映射 6 个核心字段 -->
+    <resultMap id="DeviceResultMap" type="com.example.powerops.entity.Device">
+        <id column="DEVICE_ID" property="deviceId"/>
+        <result column="DEVICE_NO" property="deviceNo"/>
+        <result column="DEVICE_NAME" property="deviceName"/>
+        <result column="DEVICE_TYPE" property="deviceType"/>
+        <result column="SHOP_ID" property="shopId"/>
+        <result column="STATUS" property="status"/>
+    </resultMap>
+
+    <!-- 根据ID查询单个设备 -->
+    <select id="findById" resultMap="DeviceResultMap">
+        SELECT * FROM DEVICE WHERE DEVICE_ID = #{deviceId}
+    </select>
+
+    <!-- 分页查询设备列表，支持设备名称模糊/类型/商铺/状态筛选，按 DEVICE_ID 倒序 -->
+    <select id="listDevices" resultMap="DeviceResultMap">
+        SELECT * FROM (
+            SELECT t.*, ROWNUM rn FROM (
+                SELECT * FROM DEVICE
+                <where>
+                    <if test="deviceName != null and deviceName != ''">AND DEVICE_NAME LIKE '%' || #{deviceName} || '%'</if>
+                    <if test="deviceType != null and deviceType != ''">AND DEVICE_TYPE = #{deviceType}</if>
+                    <if test="shopId != null">AND SHOP_ID = #{shopId}</if>
+                    <if test="status != null">AND STATUS = #{status}</if>
+                </where>
+                ORDER BY DEVICE_ID DESC
+            ) t WHERE ROWNUM &lt;= #{offset} + #{limit}
+        ) WHERE rn &gt; #{offset}
+    </select>
+
+    <!-- 统计设备总数（与 listDevices 筛选条件保持一致） -->
+    <select id="countDevices" resultType="long">
+        SELECT COUNT(*) FROM DEVICE
+        <where>
+            <if test="deviceName != null and deviceName != ''">AND DEVICE_NAME LIKE '%' || #{deviceName} || '%'</if>
+            <if test="deviceType != null and deviceType != ''">AND DEVICE_TYPE = #{deviceType}</if>
+            <if test="shopId != null">AND SHOP_ID = #{shopId}</if>
+            <if test="status != null">AND STATUS = #{status}</if>
+        </where>
+    </select>
+
+    <!-- 根据商铺ID查询设备列表，供商铺关联页面使用 -->
+    <select id="listByShopId" resultMap="DeviceResultMap">
+        SELECT * FROM DEVICE WHERE SHOP_ID = #{shopId} ORDER BY DEVICE_ID
+    </select>
+
+    <!-- 新增设备，主键由序列 SEQ_DEVICE 生成，简化版只插入核心字段 -->
+    <insert id="insert" parameterType="com.example.powerops.entity.Device">
+        INSERT INTO DEVICE (DEVICE_ID, DEVICE_NO, DEVICE_NAME, DEVICE_TYPE, SHOP_ID, STATUS)
+        VALUES (SEQ_DEVICE.NEXTVAL, #{deviceNo}, #{deviceName}, #{deviceType}, #{shopId}, #{status})
+    </insert>
+
+    <!-- 更新设备信息（不含 deviceId 变更），简化版只更新核心字段 -->
+    <update id="update" parameterType="com.example.powerops.entity.Device">
+        UPDATE DEVICE SET
+            DEVICE_NO = #{deviceNo}, DEVICE_NAME = #{deviceName}, DEVICE_TYPE = #{deviceType},
+            SHOP_ID = #{shopId}, STATUS = #{status}
+        WHERE DEVICE_ID = #{deviceId}
+    </update>
+
+    <!-- 根据ID删除设备 -->
+    <delete id="deleteById">DELETE FROM DEVICE WHERE DEVICE_ID = #{deviceId}</delete>
+
+</mapper>

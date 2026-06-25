@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.powerops.mapper.AlarmMapper">
+
+    <!-- 报警结果映射，简化版去掉了 alarmValue/thresholdValue -->
+    <resultMap id="AlarmResultMap" type="com.example.powerops.entity.Alarm">
+        <id column="ALARM_ID" property="alarmId"/>
+        <result column="DEVICE_ID" property="deviceId"/>
+        <result column="ALARM_TYPE" property="alarmType"/>
+        <result column="ALARM_LEVEL" property="alarmLevel"/>
+        <result column="ALARM_TIME" property="alarmTime"/>
+        <result column="STATUS" property="status"/>
+        <result column="HANDLER_ID" property="handlerId"/>
+        <result column="HANDLE_TIME" property="handleTime"/>
+    </resultMap>
+
+    <!-- 根据ID查询报警 -->
+    <select id="findById" resultMap="AlarmResultMap">
+        SELECT * FROM ALARM WHERE ALARM_ID = #{alarmId}
+    </select>
+
+    <!-- 分页查询报警列表，支持设备/类型/等级/状态筛选 -->
+    <select id="listAlarms" resultMap="AlarmResultMap">
+        SELECT * FROM (
+            SELECT t.*, ROWNUM rn FROM (
+                SELECT * FROM ALARM
+                <where>
+                    <if test="deviceId != null">AND DEVICE_ID = #{deviceId}</if>
+                    <if test="alarmType != null and alarmType != ''">AND ALARM_TYPE = #{alarmType}</if>
+                    <if test="alarmLevel != null and alarmLevel != ''">AND ALARM_LEVEL = #{alarmLevel}</if>
+                    <if test="status != null">AND STATUS = #{status}</if>
+                </where>
+                ORDER BY ALARM_TIME DESC
+            ) t WHERE ROWNUM &lt;= #{offset} + #{limit}
+        ) WHERE rn &gt; #{offset}
+    </select>
+
+    <!-- 统计报警总数 -->
+    <select id="countAlarms" resultType="long">
+        SELECT COUNT(*) FROM ALARM
+        <where>
+            <if test="deviceId != null">AND DEVICE_ID = #{deviceId}</if>
+            <if test="alarmType != null and alarmType != ''">AND ALARM_TYPE = #{alarmType}</if>
+            <if test="alarmLevel != null and alarmLevel != ''">AND ALARM_LEVEL = #{alarmLevel}</if>
+            <if test="status != null">AND STATUS = #{status}</if>
+        </where>
+    </select>
+
+    <!-- 新增报警，alarmTime 由数据库 SYSDATE 自动填充 -->
+    <insert id="insert" parameterType="com.example.powerops.entity.Alarm">
+        INSERT INTO ALARM (ALARM_ID, DEVICE_ID, ALARM_TYPE, ALARM_LEVEL, STATUS, ALARM_TIME)
+        VALUES (SEQ_ALARM.NEXTVAL, #{deviceId}, #{alarmType}, #{alarmLevel}, #{status}, SYSDATE)
+    </insert>
+
+    <!-- 确认报警：状态改为"已确认"，记录确认人和确认时间 -->
+    <update id="confirmAlarm">
+        UPDATE ALARM SET STATUS = '已确认', HANDLER_ID = #{userId}, HANDLE_TIME = SYSDATE
+        WHERE ALARM_ID = #{alarmId}
+    </update>
+
+    <!-- 处理报警：状态改为"已解决"，记录处理人和处理时间 -->
+    <update id="handleAlarm">
+        UPDATE ALARM SET STATUS = '已解决', HANDLER_ID = #{userId}, HANDLE_TIME = SYSDATE
+        WHERE ALARM_ID = #{alarmId}
+    </update>
+
+</mapper>

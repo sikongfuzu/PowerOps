@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.powerops.mapper.ShopMapper">
+
+    <!-- 商铺结果映射，简化版去掉了 ratedCapacity/supplyCircuit -->
+    <resultMap id="ShopResultMap" type="com.example.powerops.entity.Shop">
+        <id column="SHOP_ID" property="shopId"/>
+        <result column="SHOP_NO" property="shopNo"/>
+        <result column="SHOP_NAME" property="shopName"/>
+        <result column="BUILDING" property="building"/>
+        <result column="FLOOR_NO" property="floorNo"/>
+        <result column="BUSINESS_TYPE" property="businessType"/>
+        <result column="CONTACT_PERSON" property="contactPerson"/>
+        <result column="CONTACT_PHONE" property="contactPhone"/>
+        <result column="STATUS" property="status"/>
+        <result column="CREATE_TIME" property="createTime"/>
+    </resultMap>
+
+    <!-- 根据ID查询商铺 -->
+    <select id="findById" resultMap="ShopResultMap">
+        SELECT * FROM SHOP WHERE SHOP_ID = #{shopId}
+    </select>
+
+    <!-- 分页查询商铺列表，支持名称模糊/楼栋/业态类型/状态筛选，按创建时间倒序 -->
+    <select id="listShops" resultMap="ShopResultMap">
+        SELECT * FROM (
+            SELECT t.*, ROWNUM rn FROM (
+                SELECT * FROM SHOP
+                <where>
+                    <if test="shopName != null and shopName != ''">AND SHOP_NAME LIKE '%' || #{shopName} || '%'</if>
+                    <if test="building != null and building != ''">AND BUILDING = #{building}</if>
+                    <if test="businessType != null and businessType != ''">AND BUSINESS_TYPE = #{businessType}</if>
+                    <if test="status != null">AND STATUS = #{status}</if>
+                </where>
+                ORDER BY CREATE_TIME DESC
+            ) t WHERE ROWNUM &lt;= #{offset} + #{limit}
+        ) WHERE rn &gt; #{offset}
+    </select>
+
+    <!-- 统计商铺总数（与 listShops 筛选条件保持一致） -->
+    <select id="countShops" resultType="long">
+        SELECT COUNT(*) FROM SHOP
+        <where>
+            <if test="shopName != null and shopName != ''">AND SHOP_NAME LIKE '%' || #{shopName} || '%'</if>
+            <if test="building != null and building != ''">AND BUILDING = #{building}</if>
+            <if test="businessType != null and businessType != ''">AND BUSINESS_TYPE = #{businessType}</if>
+            <if test="status != null">AND STATUS = #{status}</if>
+        </where>
+    </select>
+
+    <!-- 新增商铺，主键由序列 SEQ_SHOP 生成，createTime 由 SYSDATE 自动填充 -->
+    <insert id="insert" parameterType="com.example.powerops.entity.Shop">
+        INSERT INTO SHOP (SHOP_ID, SHOP_NO, SHOP_NAME, BUILDING, FLOOR_NO, BUSINESS_TYPE,
+                          CONTACT_PERSON, CONTACT_PHONE, STATUS, CREATE_TIME)
+        VALUES (SEQ_SHOP.NEXTVAL, #{shopNo}, #{shopName}, #{building}, #{floorNo}, #{businessType},
+                #{contactPerson}, #{contactPhone}, #{status}, SYSDATE)
+    </insert>
+
+    <!-- 更新商铺信息（不含 shopId 变更） -->
+    <update id="update" parameterType="com.example.powerops.entity.Shop">
+        UPDATE SHOP SET
+            SHOP_NO = #{shopNo}, SHOP_NAME = #{shopName}, BUILDING = #{building}, FLOOR_NO = #{floorNo},
+            BUSINESS_TYPE = #{businessType}, CONTACT_PERSON = #{contactPerson}, CONTACT_PHONE = #{contactPhone},
+            STATUS = #{status}
+        WHERE SHOP_ID = #{shopId}
+    </update>
+
+    <!-- 根据ID删除商铺 -->
+    <delete id="deleteById">DELETE FROM SHOP WHERE SHOP_ID = #{shopId}</delete>
+
+</mapper>

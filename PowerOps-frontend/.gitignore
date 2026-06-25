@@ -1,0 +1,7 @@
+﻿### Frontend .gitignore ###
+node_modules/
+dist/
+*.local
+.vscode/
+.idea/
+*.iml

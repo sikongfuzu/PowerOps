@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.powerops.mapper.PowerRecordMapper">
+
+    <!-- 用电记录结果映射，简化版：只映射 4 个字段，去掉了电表ID/起止读数 -->
+    <resultMap id="PowerRecordResultMap" type="com.example.powerops.entity.PowerRecord">
+        <id column="RECORD_ID" property="recordId"/>
+        <result column="SHOP_ID" property="shopId"/>
+        <result column="RECORD_DATE" property="recordDate"/>
+        <result column="CONSUMPTION" property="consumption"/>
+    </resultMap>
+
+    <!-- 新增用电记录，主键由序列 SEQ_POWER_RECORD 生成 -->
+    <insert id="insert" parameterType="com.example.powerops.entity.PowerRecord">
+        INSERT INTO POWER_RECORD (RECORD_ID, SHOP_ID, RECORD_DATE, CONSUMPTION)
+        VALUES (SEQ_POWER_RECORD.NEXTVAL, #{shopId},
+                TO_DATE(#{recordDate}, 'YYYY-MM-DD'), #{consumption})
+    </insert>
+
+    <!-- 按商铺查询用电记录，支持日期范围筛选（startDate/endDate），按 RECORD_DATE 倒序 -->
+    <select id="listByShopId" resultMap="PowerRecordResultMap">
+        SELECT * FROM POWER_RECORD WHERE SHOP_ID = #{shopId}
+        <if test="startDate != null and startDate != ''">AND RECORD_DATE &gt;= TO_DATE(#{startDate}, 'YYYY-MM-DD')</if>
+        <if test="endDate != null and endDate != ''">AND RECORD_DATE &lt;= TO_DATE(#{endDate}, 'YYYY-MM-DD')</if>
+        ORDER BY RECORD_DATE DESC
+    </select>
+
+</mapper>

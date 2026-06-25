@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.powerops.mapper.WorkOrderMapper">
+
+    <!-- 工单结果映射，简化版去掉了 powerOutageRequired/solution -->
+    <resultMap id="WorkOrderResultMap" type="com.example.powerops.entity.WorkOrder">
+        <id column="ORDER_ID" property="orderId"/>
+        <result column="ORDER_NO" property="orderNo"/>
+        <result column="ORDER_TYPE" property="orderType"/>
+        <result column="DEVICE_ID" property="deviceId"/>
+        <result column="APPLICANT_ID" property="applicantId"/>
+        <result column="HANDLER_ID" property="handlerId"/>
+        <result column="PRIORITY" property="priority"/>
+        <result column="DESCRIPTION" property="description"/>
+        <result column="STATUS" property="status"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="FINISH_TIME" property="finishTime"/>
+    </resultMap>
+
+    <!-- 根据ID查询工单 -->
+    <select id="findById" resultMap="WorkOrderResultMap">
+        SELECT * FROM WORK_ORDER WHERE ORDER_ID = #{orderId}
+    </select>
+
+    <!-- 分页查询工单列表，支持类型/状态/处理人/优先级筛选 -->
+    <select id="listOrders" resultMap="WorkOrderResultMap">
+        SELECT * FROM (
+            SELECT t.*, ROWNUM rn FROM (
+                SELECT * FROM WORK_ORDER
+                <where>
+                    <if test="orderType != null and orderType != ''">AND ORDER_TYPE = #{orderType}</if>
+                    <if test="status != null and status != ''">AND STATUS = #{status}</if>
+                    <if test="handlerId != null">AND HANDLER_ID = #{handlerId}</if>
+                    <if test="priority != null and priority != ''">AND PRIORITY = #{priority}</if>
+                </where>
+                ORDER BY CREATE_TIME DESC
+            ) t WHERE ROWNUM &lt;= #{offset} + #{limit}
+        ) WHERE rn &gt; #{offset}
+    </select>
+
+    <!-- 统计工单总数 -->
+    <select id="countOrders" resultType="long">
+        SELECT COUNT(*) FROM WORK_ORDER
+        <where>
+            <if test="orderType != null and orderType != ''">AND ORDER_TYPE = #{orderType}</if>
+            <if test="status != null and status != ''">AND STATUS = #{status}</if>
+            <if test="handlerId != null">AND HANDLER_ID = #{handlerId}</if>
+            <if test="priority != null and priority != ''">AND PRIORITY = #{priority}</if>
+        </where>
+    </select>
+
+    <!-- 新增工单，主键由序列生成，初始状态为"待处理" -->
+    <insert id="insert" parameterType="com.example.powerops.entity.WorkOrder">
+        INSERT INTO WORK_ORDER (ORDER_ID, ORDER_NO, ORDER_TYPE, DEVICE_ID, APPLICANT_ID, HANDLER_ID, PRIORITY, DESCRIPTION, STATUS)
+        VALUES (SEQ_WORK_ORDER.NEXTVAL, #{orderNo}, #{orderType}, #{deviceId}, #{applicantId}, #{handlerId}, #{priority}, #{description}, #{status})
+    </insert>
+
+    <!-- 更新工单信息（不修改 orderNo/status/createTime/finishTime） -->
+    <update id="update" parameterType="com.example.powerops.entity.WorkOrder">
+        UPDATE WORK_ORDER SET
+            ORDER_TYPE = #{orderType},
+            DEVICE_ID = #{deviceId},
+            APPLICANT_ID = #{applicantId},
+            HANDLER_ID = #{handlerId},
+            PRIORITY = #{priority},
+            DESCRIPTION = #{description}
+        WHERE ORDER_ID = #{orderId}
+    </update>
+
+    <!-- 更新工单状态，状态为"已完成"时自动填充完成时间 -->
+    <update id="updateStatus">
+        UPDATE WORK_ORDER SET STATUS = #{status}
+        <if test="status == '已完成'">, FINISH_TIME = SYSDATE</if>
+        WHERE ORDER_ID = #{orderId}
+    </update>
+
+    <!-- 指派工单：设置处理人并将状态改为"处理中" -->
+    <update id="assignOrder">
+        UPDATE WORK_ORDER SET HANDLER_ID = #{handlerId}, STATUS = '处理中'
+        WHERE ORDER_ID = #{orderId}
+    </update>
+
+    <!-- 自动生成工单编号：WO + yyyyMMdd + 4位流水号 -->
+    <select id="generateOrderNo" resultType="string">
+        SELECT 'WO' || TO_CHAR(SYSDATE, 'YYYYMMDD') || LPAD(SEQ_WORK_ORDER.NEXTVAL, 4, '0') FROM DUAL
+    </select>
+
+    <!-- 根据ID删除工单 -->
+    <delete id="deleteById">DELETE FROM WORK_ORDER WHERE ORDER_ID = #{orderId}</delete>
+
+</mapper>
